@@ -8,6 +8,7 @@
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "helmet": "^3.21.3",
+    "mongoimport": "^1.0.6",
     "p-limit": "^2.2.2",
     "p-settle": "^4.0.0"
   },
