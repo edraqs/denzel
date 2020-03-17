@@ -261,7 +261,7 @@ This endpoint accepts the following post parameters:
 - `review` - the personal review
 
 ```sh
-❯ curl -X POST -d '{"date": "2019-03-04", "review": "😍 🔥"}' -H "Content-Type: application/json" http://localhost:9292/movies/tt0328107
+❯ curl -X PUT -d '{"date": "2019-03-04", "review": "😍 🔥"}' -H "Content-Type: application/json" http://localhost:9292/movies/tt0328107
 {
   "_id": "507f191e810c19729de860ea"
 }
