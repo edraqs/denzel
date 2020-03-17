@@ -25,7 +25,7 @@ db.initialize(dbName,dbCollectionName,function(dbCollection){
             response.json(result);
         });
     });
-}
+});
 
 app.listen(PORT);
 console.log(`📡 Running on port ${PORT}`);
