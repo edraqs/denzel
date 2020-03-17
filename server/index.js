@@ -3,6 +3,7 @@ const express = require('express');
 const helmet = require('helmet');
 const {PORT} = require('./constants');
 const imdb = require('./imdb');
+const db = require('./db');
 const DENZEL_IMDB_ID = 'nm0000243';
 
 
@@ -15,19 +16,16 @@ app.use(cors());
 app.use(helmet());
 
 app.options('*', cors());
-
-var jsonMovies;
-
-async function getMovies (actor = DENZEL_IMDB_ID) {
-  const movies = await imdb(DENZEL_IMDB_ID);
-  jsonMovies = JSON.stringify(movies, null, 2);
+const dbName = "denzel-webapp";
+const dbCollectionName = "movies";
+db.initialize(dbName,dbCollectionName,function(dbCollection){
+    app.get('/movies/populate/' + DENZEL_IMDB_ID, (request, response) => {
+        dbCollection.find().toArray((error, result) => {
+            if (error) throw error;
+            response.json(result);
+        });
+    });
 }
-
-getMovies();
-app.get('/movies/populate/' + DENZEL_IMDB_ID, (request, response) => {
-    response.send(jsonMovies);
-});
-
 
 app.listen(PORT);
 console.log(`📡 Running on port ${PORT}`);
