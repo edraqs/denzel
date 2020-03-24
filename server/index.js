@@ -6,7 +6,9 @@ const{
     GraphQLObjectType,
     GraphQLString,
     GraphQLInt,
-    GraphQLList
+    GraphQLFloat,
+    GraphQLList,
+    GraphQLNonNull
 } = require('graphql')
 const helmet = require('helmet');
 const {
@@ -14,19 +16,41 @@ const {
 } = require('./constants');
 const imdb = require('./imdb');
 const db = require('./db');
+//const mongoose = require ('./mongoose')
 const DENZEL_IMDB_ID = 'nm0000243';
 
 
+const Mongoose = require("mongoose");
+const MovieModel = Mongoose.model("movie", {
+    link: String,
+    id: String,
+    metascore: Number,
+    poster: String,
+    rating: Number,
+    synopsis: String,
+    title: String,
+    votes: Number,
+    year: Number
+});
+
+
+
 const app = express();
+
+//const MovieModel = mongoose.initialize();
 
 const MovieType = new GraphQLObjectType({
     name :'Movie',
     description: 'Informations regarding a movie',
     fields: () => ({
         link: { type: GraphQLString },
+        id: { type: GraphQLNonNull(GraphQLString) },
         metascore: { type: GraphQLInt },
+        poster: { type: GraphQLString },
+        rating: { type: GraphQLFloat },
         synopsis: { type: GraphQLString },
         title: { type: GraphQLString },
+        votes: { type: GraphQLInt },
         year: { type: GraphQLInt }
     })
 })
@@ -35,9 +59,27 @@ const QueryType = new GraphQLObjectType({
     name: 'Query',
     fields: () => ({
         movies: {
-            type: new GraphQLList(MovieType),
-            description: 'List of books',
-            resolve: () => movies
+            type: GraphQLList(MovieType),
+            resolve: (root, args, context, info) => {
+                return MovieModel.find().exec();
+            }
+        },
+        movie: {
+            type: MovieType,
+            args: {
+                link: { type: GraphQLString },
+                id: { type: GraphQLNonNull(GraphQLString) },
+                metascore: { type: GraphQLInt },
+                poster: { type: GraphQLString },
+                rating: { type: GraphQLFloat },
+                synopsis: { type: GraphQLString },
+                title: { type: GraphQLString },
+                votes: { type: GraphQLInt },
+                year: { type: GraphQLInt }
+            },
+            resolve: (root, args, context, info) => {
+                return MovieModel.findById(args.id).exec();
+            }
         }
     })
 })
