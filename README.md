@@ -1,3 +1,4 @@
+# README_PROGRESS.md shows my current progress
 # DENZEL
 
 > The must-watch Denzel's movies
