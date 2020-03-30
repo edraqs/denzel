@@ -8,7 +8,8 @@ const{
     GraphQLInt,
     GraphQLFloat,
     GraphQLList,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLID
 } = require('graphql')
 const helmet = require('helmet');
 const {
@@ -16,11 +17,15 @@ const {
 } = require('./constants');
 const imdb = require('./imdb');
 const db = require('./db');
-//const mongoose = require ('./mongoose')
 const DENZEL_IMDB_ID = 'nm0000243';
+const app = express();
 
 
 const Mongoose = require("mongoose");
+Mongoose.connect('mongodb+srv://admin:9h2szu@denzel-9qcrp.mongodb.net/test?retryWrites=true&w=majority', {useNewUrlParser: true});
+
+//Tried using mongoose instead of the basic db implementation but it didn't work
+
 const MovieModel = Mongoose.model("movie", {
     link: String,
     id: String,
@@ -34,18 +39,14 @@ const MovieModel = Mongoose.model("movie", {
 });
 
 
-
-const app = express();
-
-//const MovieModel = mongoose.initialize();
-
 //Defining the Movie type with it's parameters for graphQL
+
 const MovieType = new GraphQLObjectType({
     name :'Movie',
     description: 'Informations regarding a movie',
     fields: () => ({
         link: { type: GraphQLString },
-        id: { type: GraphQLNonNull(GraphQLString) },
+        id: { type: GraphQLNonNull(GraphQLID) },
         metascore: { type: GraphQLInt },
         poster: { type: GraphQLString },
         rating: { type: GraphQLFloat },
@@ -57,8 +58,8 @@ const MovieType = new GraphQLObjectType({
 })
 //This is supposed to allow for queries on the id, it did not work properly
 const QueryType = new GraphQLObjectType({
-    name: 'Query',
-    fields: () => ({
+    name: "Query",
+    fields: {
         movies: {
             type: GraphQLList(MovieType),
             resolve: (root, args, context, info) => {
@@ -69,7 +70,7 @@ const QueryType = new GraphQLObjectType({
             type: MovieType,
             args: {
                 link: { type: GraphQLString },
-                id: { type: GraphQLNonNull(GraphQLString) },
+                id: { type: GraphQLNonNull(GraphQLID) },
                 metascore: { type: GraphQLInt },
                 poster: { type: GraphQLString },
                 rating: { type: GraphQLFloat },
@@ -82,7 +83,7 @@ const QueryType = new GraphQLObjectType({
                 return MovieModel.findById(args.id).exec();
             }
         }
-    })
+    }
 })
 
 //the structure of the query is defined in QueryType
@@ -91,7 +92,7 @@ const schema = new GraphQLSchema({
 })
 
 module.exports = app;
-
+//I managed to launch graphQL in my navigator and have it display all the parameters but couldn't get any query results
 app.use(require('body-parser').json());
 app.use(cors());
 app.use(helmet());
@@ -100,6 +101,7 @@ app.use('/graphql',expressGraphQL({
     graphiql: true
 }))
 
+//Part using the REST API (this works and I managed to get results on insomnia)
 app.options('*', cors());
 const dbName = "denzel-webapp";
 const dbCollectionName = "movies";
@@ -110,6 +112,7 @@ db.initialize(dbName, dbCollectionName, function(dbCollection) {
             response.json(result);
         });
     });
+    //Sending the query for a metascore greater than 70
     app.get('/movies', (request, response) => {
         // return random must-watch movie
         var query = {
@@ -169,11 +172,11 @@ db.initialize(dbName, dbCollectionName, function(dbCollection) {
             });
         });
     });
+
     app.get('/movies/:id', (request, response) => {
-        const itemID = request.params.id;
-        dbCollection.find({
-            id: itemID
-        }).toArray((error, result) => {
+        //get the id from params & return the movie corresponding
+        const itemId = request.params.id;
+        dbCollection.findOne({id: itemId}, (error, result) => {
             if (error) throw error;
             response.json(result);
         });
