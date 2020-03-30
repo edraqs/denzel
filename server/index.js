@@ -39,6 +39,7 @@ const app = express();
 
 //const MovieModel = mongoose.initialize();
 
+//Defining the Movie type with it's parameters for graphQL
 const MovieType = new GraphQLObjectType({
     name :'Movie',
     description: 'Informations regarding a movie',
@@ -54,7 +55,7 @@ const MovieType = new GraphQLObjectType({
         year: { type: GraphQLInt }
     })
 })
-
+//This is supposed to allow for queries on the id, it did not work properly
 const QueryType = new GraphQLObjectType({
     name: 'Query',
     fields: () => ({
@@ -84,6 +85,7 @@ const QueryType = new GraphQLObjectType({
     })
 })
 
+//the structure of the query is defined in QueryType
 const schema = new GraphQLSchema({
     query: QueryType
 })
